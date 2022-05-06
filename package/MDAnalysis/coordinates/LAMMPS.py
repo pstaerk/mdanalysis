@@ -456,11 +456,11 @@ class DumpReader(base.ReaderBase):
     "unwrapped" (xu,yu,zu) and "scaled_unwrapped" (xsu,ysu,zsu) coordinate
     conventions (see https://docs.lammps.org/dump.html for more details).
     If `lammps_coordinate_convention='auto'` (default),
-    one will be guessed. Guessing checks whether the coordinates fit each convention in the order "unscaled",
-    "scaled", "unwrapped", "scaled_unwrapped" and whichever set of coordinates
-    is detected first will be used. If coordinates are given in the scaled
-    coordinate convention (xs,ys,zs) or scaled unwrapped coordinate convention
-    (xsu,ysu,zsu) they will automatically be converted from their
+    one will be guessed. Guessing checks whether the coordinates fit each convention 
+    in the order "unscaled", "scaled", "unwrapped", "scaled_unwrapped" and whichever 
+    set of coordinates is detected first will be used. If coordinates are given in 
+    the scaled coordinate convention (xs,ys,zs) or scaled unwrapped coordinate 
+    convention (xsu,ysu,zsu) they will automatically be converted from their
     scaled/fractional representation to their real values.
 
 
@@ -469,8 +469,8 @@ class DumpReader(base.ReaderBase):
     .. versionadded:: 0.19.0
     """
     format = 'LAMMPSDUMP'
-    _conventions = ["auto", "unscaled", "scaled", "unwrapped",
-                    "charge", "scaled_unwrapped"]
+    _conventions = ["auto", "unscaled", "scaled", "unwrapped", 
+            "scaled_unwrapped"]
 
     _coordtype_column_names = {
         "unscaled": ["x", "y", "z"],
@@ -480,7 +480,7 @@ class DumpReader(base.ReaderBase):
     }
 
     def __init__(self, filename, lammps_coordinate_convention="auto",
-            **kwargs):
+        additional_columns=False, **kwargs):
         super(DumpReader, self).__init__(filename, **kwargs)
 
         root, ext = os.path.splitext(self.filename)
@@ -492,6 +492,9 @@ class DumpReader(base.ReaderBase):
                              f"'{lammps_coordinate_convention}'"
                              " is not a valid option. "
                              f"Please choose one of {option_string}")
+
+        if additional_columns:
+            self._additional_columns = additional_columns
 
         self._cache = {}
 
@@ -589,7 +592,8 @@ class DumpReader(base.ReaderBase):
         convention_to_col_ix = {}
         for cv_name, cv_col_names in self._coordtype_column_names.items():
             try:
-                convention_to_col_ix[cv_name] = [attr_to_col_ix[x] for x in cv_col_names]
+                convention_to_col_ix[cv_name] = [attr_to_col_ix[x] for x
+                        in cv_col_names]
             except KeyError:
                 pass
         # this should only trigger on first read of "ATOM" card, after which it
@@ -603,19 +607,24 @@ class DumpReader(base.ReaderBase):
             except IndexError:
                 raise ValueError("No coordinate information detected")
         elif not self.lammps_coordinate_convention in convention_to_col_ix:
-            raise ValueError(f"No coordinates following convention {self.lammps_coordinate_convention} found in timestep")
+            raise ValueError("No coordinates following convention"
+                    + f"{self.lammps_coordinate_convention} found in timestep")
 
         coord_cols = convention_to_col_ix[self.lammps_coordinate_convention]
 
         ids = "id" in attr_to_col_ix
 
-        # Create the data arrays for additional attributes which will be saved 
+        # Create the data arrays for additional attributes which will be saved
         # under ts.data
         additional_keys = []
         if len(attrs) > 3:
             for attribute_key in attrs:
                 # Skip the normal columns
-                if attribute_key == "id" or attribute_key in self._coordtype_column_names[self.lammps_coordinate_convention]: 
+                if attribute_key == "id" or \
+                        attribute_key in \
+                        self._coordtype_column_names[
+                        self.lammps_coordinate_convention] \
+                        or attribute_key not in self._additional_columns:
                     continue
                 # Else this is an additional field
                 ts.data[attribute_key] = np.empty(self.n_atoms)
@@ -629,9 +638,11 @@ class DumpReader(base.ReaderBase):
             ts.positions[i] = [fields[dim] for dim in coord_cols]
 
             # Add the capability to also collect other data
-            if len(additional_keys) != 0: # Then there is also more than just the positional data
+            # Then there is also more than just the positional data
+            if len(additional_keys) != 0:
                 for attribute_key in additional_keys:
-                    ts.data[attribute_key][i] = fields[attr_to_col_ix[attribute_key]]
+                    ts.data[attribute_key][i] = \
+                            fields[attr_to_col_ix[attribute_key]]
 
         order = np.argsort(indices)
         ts.positions = ts.positions[order]
