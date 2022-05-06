@@ -136,10 +136,12 @@ __all__ = [
     "LAMMPScnt", "LAMMPScnt2",  # triclinic box
     "LAMMPShyd", "LAMMPShyd2",
     "LAMMPSdata_deletedatoms",  # with deleted atoms
+    "LAMMPSdata_additional_columns",  # structure for the additional column lammpstrj
     "LAMMPSDUMP",
     "LAMMPSDUMP_long",  # lammpsdump file with a few zeros sprinkled in the first column first frame
     "LAMMPSDUMP_allcoords",  # lammpsdump file with all coordinate conventions (x,xs,xu,xsu) present, from LAMMPS rdf example
     "LAMMPSDUMP_nocoords",  # lammpsdump file with no coordinates
+    "LAMMPSDUMP_additional_columns",  # lammpsdump file with additional data (an additional charge column)
     "unordered_res",  # pdb file with resids non sequential
     "GMS_ASYMOPT",  # GAMESS C1  optimization
     "GMS_SYMOPT",   # GAMESS D4h optimization
@@ -481,6 +483,7 @@ trz4data = resource_filename(__name__, "data/lammps/datatest.trz")
 LAMMPSdata = resource_filename(__name__, "data/lammps/datatest.data")
 LAMMPSdata_mini = resource_filename(__name__, "data/lammps/mini.data")
 LAMMPSdata2 = resource_filename(__name__, "data/lammps/ifabp_apo_100mM.data.bz2")
+LAMMPSdata_additional_columns = resource_filename(__name__, "data/lammps/additional_columns.data")
 LAMMPSdcd2 = resource_filename(__name__, "data/lammps/ifabp_apo_100mM.dcd")
 LAMMPScnt = resource_filename(__name__, "data/lammps/cnt-hexagonal-class1.data")
 LAMMPScnt2 = resource_filename(__name__, "data/lammps/cnt-hexagonal-class1.data2")
@@ -491,6 +494,7 @@ LAMMPSDUMP = resource_filename(__name__, "data/lammps/wat.lammpstrj.bz2")
 LAMMPSDUMP_long = resource_filename(__name__, "data/lammps/wat.lammpstrj_long.bz2")
 LAMMPSDUMP_allcoords = resource_filename(__name__, "data/lammps/spce_all_coords.lammpstrj.bz2")
 LAMMPSDUMP_nocoords = resource_filename(__name__, "data/lammps/spce_no_coords.lammpstrj.bz2")
+LAMMPSDUMP_additional_columns = resource_filename(__name__, "data/lammps/additional_columns.lammpstrj")
 
 
 unordered_res = resource_filename(__name__, "data/unordered_res.pdb")

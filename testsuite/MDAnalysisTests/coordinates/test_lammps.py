@@ -34,10 +34,13 @@ from numpy.testing import (assert_equal, assert_almost_equal)
 from MDAnalysisTests import make_Universe
 from MDAnalysisTests.coordinates.reference import (
     RefLAMMPSData, RefLAMMPSDataMini, RefLAMMPSDataDCD,
+    RefLAMMPSDataAdditionalColumns
 )
 from MDAnalysisTests.datafiles import (
-    LAMMPScnt, LAMMPShyd, LAMMPSdata, LAMMPSdata_mini, LAMMPSDUMP,
-    LAMMPSDUMP_allcoords, LAMMPSDUMP_nocoords
+    LAMMPScnt, LAMMPShyd, LAMMPSdata, LAMMPSdata_mini, 
+    LAMMPSdata_additional_columns, LAMMPSDUMP,
+    LAMMPSDUMP_allcoords, LAMMPSDUMP_nocoords,
+    LAMMPSDUMP_additional_columns
 )
 
 
@@ -425,6 +428,7 @@ class TestLammpsDumpReader(object):
             # no conversion needed
             f = LAMMPSDUMP
         else:
+            # Select if one wants to use the additional column format
             f = str(tmpdir.join('lammps.' + trjtype))
             with bz2.BZ2File(LAMMPSDUMP, 'rb') as datain:
                 data = datain.read()
@@ -437,6 +441,21 @@ class TestLammpsDumpReader(object):
 
         yield mda.Universe(f, format='LAMMPSDUMP',
                            lammps_coordinate_convention="auto")
+
+    @pytest.fixture()
+    def u_add(self):
+        f = LAMMPSDUMP_additional_columns
+        top = LAMMPSdata_additional_columns
+        yield mda.Universe(top, f, format='LAMMPSDUMP',
+                           lammps_coordinate_convention="auto",
+                           additional_columns=['q'])
+
+    @pytest.fixture()
+    def reference_additional_columns(self):
+        data['charges'] = np.array([2.58855e-03,  6.91952e-05,  1.05548e-02,  4.20319e-03,
+                        9.19172e-03,  4.79777e-03,  6.36864e-04,  5.87125e-03,
+                       -2.18125e-03,  6.88910e-03])
+        return data
 
     @pytest.fixture()
     def reference_positions(self):
@@ -509,6 +528,10 @@ class TestLammpsDumpReader(object):
                                              reference_positions['atom13_pos']):
             assert_almost_equal(atom1.position, atom1_pos, decimal=5)
             assert_almost_equal(atom13.position, atom13_pos, decimal=5)
+
+    def test_additional_colunmns(self, u_add, reference_additional_columns):
+        charges = u.trajectory[0].data['q']
+        assert_almost_equal(charges, reference_additional_columns['charges'])
 
 
 @pytest.mark.parametrize("convention",
