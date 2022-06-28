@@ -456,12 +456,13 @@ class DumpReader(base.ReaderBase):
     "unwrapped" (xu,yu,zu) and "scaled_unwrapped" (xsu,ysu,zsu) coordinate
     conventions (see https://docs.lammps.org/dump.html for more details).
     If `lammps_coordinate_convention='auto'` (default),
-    one will be guessed. Guessing checks whether the coordinates fit each convention 
-    in the order "unscaled", "scaled", "unwrapped", "scaled_unwrapped" and whichever 
-    set of coordinates is detected first will be used. If coordinates are given in 
-    the scaled coordinate convention (xs,ys,zs) or scaled unwrapped coordinate 
-    convention (xsu,ysu,zsu) they will automatically be converted from their
-    scaled/fractional representation to their real values.
+    one will be guessed. Guessing checks whether the coordinates fit each
+    convention in the order "unscaled", "scaled", "unwrapped",
+    "scaled_unwrapped" and whichever set of coordinates is detected first will
+    be used. If coordinates are given in the scaled coordinate convention
+    (xs,ys,zs) or scaled unwrapped coordinate convention (xsu,ysu,zsu) they
+    will automatically be converted from their scaled/fractional representation
+    to their real values.
 
     Supports both orthogonal and triclinic simulation box dimensions (for more
     details see https://docs.lammps.org/Howto_triclinic.html). In either case,
@@ -469,11 +470,12 @@ class DumpReader(base.ReaderBase):
     to represent the unit cell. Lengths *A*, *B*, *C* are in the MDAnalysis
     length unit (Å), and angles are in degrees.
 
-    By using the keyword `additional_columns`, you can specify arbitrary data to be
-    read alongside the coordinates. If specified, the keyword expects a list of the
-    names of the columns that you want to have read. The results of the parsing are
-    saved to the time step `data` dictionary alongside the name of the data column.
-    For instance, if you have time-dependent charges saved in a LAMMPS dump such as
+    By using the keyword `additional_columns`, you can specify arbitrary data
+    to be read alongside the coordinates. If specified, the keyword expects a
+    list of the names of the columns that you want to have read. The results
+    of the parsing are saved to the time step `data` dictionary alongside the
+    name of the data column. For instance, if you have time-dependent charges
+    saved in a LAMMPS dump such as
 
     ```
     ITEM: ATOMS id x y z q l
@@ -488,8 +490,8 @@ class DumpReader(base.ReaderBase):
                      additional_columns=['q', 'l'])
     ```
 
-    The additional data is then available for each time step via (as the value of
-    the `data` dictionary, sorted by the ids of the atoms).
+    The additional data is then available for each time step via
+    (as the value of the `data` dictionary, sorted by the ids of the atoms).
 
     ```
     for ts in u.trajectory:
@@ -519,7 +521,7 @@ class DumpReader(base.ReaderBase):
     }
 
     def __init__(self, filename, lammps_coordinate_convention="auto",
-        additional_columns=False, **kwargs):
+                 additional_columns=False, **kwargs):
         super(DumpReader, self).__init__(filename, **kwargs)
 
         root, ext = os.path.splitext(self.filename)
@@ -641,7 +643,7 @@ class DumpReader(base.ReaderBase):
         for cv_name, cv_col_names in self._coordtype_column_names.items():
             try:
                 convention_to_col_ix[cv_name] = [attr_to_col_ix[x] for x
-                        in cv_col_names]
+                                                 in cv_col_names]
             except KeyError:
                 pass
         # this should only trigger on first read of "ATOM" card, after which it
@@ -656,7 +658,8 @@ class DumpReader(base.ReaderBase):
                 raise ValueError("No coordinate information detected")
         elif not self.lammps_coordinate_convention in convention_to_col_ix:
             raise ValueError("No coordinates following convention"
-                    + f"{self.lammps_coordinate_convention} found in timestep")
+                             + f"{self.lammps_coordinate_convention}"
+                             + "found in timestep")
 
         coord_cols = convention_to_col_ix[self.lammps_coordinate_convention]
 
@@ -668,11 +671,11 @@ class DumpReader(base.ReaderBase):
         if len(attrs) > 3:
             for attribute_key in attrs:
                 # Skip the normal columns
-                if attribute_key == "id" or 
-                        attribute_key in 
-                        self._coordtype_column_names[
-                        self.lammps_coordinate_convention]
-                        or attribute_key not in self._additional_columns:
+                if (attribute_key == "id" or
+                    attribute_key in
+                    self._coordtype_column_names[
+                    self.lammps_coordinate_convention]
+                    or attribute_key not in self._additional_columns):
                     continue
                 # Else this is an additional field
                 ts.data[attribute_key] = np.empty(self.n_atoms)
