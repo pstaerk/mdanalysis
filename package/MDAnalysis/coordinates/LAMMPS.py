@@ -469,6 +469,38 @@ class DumpReader(base.ReaderBase):
     to represent the unit cell. Lengths *A*, *B*, *C* are in the MDAnalysis
     length unit (Å), and angles are in degrees.
 
+    By using the keyword `additional_columns`, you can specify arbitrary data to be
+    read alongside the coordinates. If specified, the keyword expects a list of the
+    names of the columns that you want to have read. The results of the parsing are
+    saved to the time step `data` dictionary alongside the name of the data column.
+    For instance, if you have time-dependent charges saved in a LAMMPS dump such as
+
+    ```
+    ITEM: ATOMS id x y z q l
+    1 2.84 8.17 -25 0.00258855 1.1
+    2 7.1 8.17 -25 6.91952e-05 1.2
+    ```
+
+    Then you may parse the additional columns `q` and `l` via.
+
+    ```
+    u = mda.Universe('path_to_data', 'path_to_lammpsdump', 
+                     additional_columns=['q', 'l'])
+    ```
+
+    The additional data is then available for each time step via (as the value of
+    the `data` dictionary, sorted by the ids of the atoms).
+
+    ```
+    for ts in u.trajectory:
+        charges = ts.data['q'] # Access the additional data, sorted by the id
+        ls = ts.data['l']
+        ...
+    ```
+
+    .. versionchanged:: 2.2.0
+       Reading of arbitrary, additional columns is now supported.
+       (Issue `#3608 <https://github.com/MDAnalysis/mdanalysis/pull/3608>`__)
     .. versionchanged:: 2.2.0
        Triclinic simulation boxes are supported.
        (Issue `#3383 <https://github.com/MDAnalysis/mdanalysis/issues/3383>`__)
@@ -477,8 +509,7 @@ class DumpReader(base.ReaderBase):
     .. versionadded:: 0.19.0
     """
     format = 'LAMMPSDUMP'
-    _conventions = ["auto", "unscaled", "scaled", "unwrapped", 
-            "scaled_unwrapped"]
+    _conventions = ["auto", "unscaled", "scaled", "unwrapped", "scaled_unwrapped"]
 
     _coordtype_column_names = {
         "unscaled": ["x", "y", "z"],
@@ -637,10 +668,10 @@ class DumpReader(base.ReaderBase):
         if len(attrs) > 3:
             for attribute_key in attrs:
                 # Skip the normal columns
-                if attribute_key == "id" or \
-                        attribute_key in \
+                if attribute_key == "id" or 
+                        attribute_key in 
                         self._coordtype_column_names[
-                        self.lammps_coordinate_convention] \
+                        self.lammps_coordinate_convention]
                         or attribute_key not in self._additional_columns:
                     continue
                 # Else this is an additional field
