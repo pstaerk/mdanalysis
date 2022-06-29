@@ -38,8 +38,8 @@ from MDAnalysisTests.coordinates.reference import (
 )
 from MDAnalysisTests.datafiles import (
     LAMMPScnt, LAMMPShyd, LAMMPSdata, LAMMPSdata_mini, LAMMPSdata_triclinic,
-    LAMMPSDUMP, LAMMPSDUMP_allcoords, LAMMPSDUMP_nocoords, LAMMPSDUMP_triclinic,
-    LAMMPSDUMP_additional_columns
+    LAMMPSdata_additional_columns, LAMMPSDUMP, LAMMPSDUMP_allcoords,
+    LAMMPSDUMP_nocoords, LAMMPSDUMP_triclinic, LAMMPSDUMP_additional_columns
 )
 
 
