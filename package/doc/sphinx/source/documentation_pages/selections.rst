@@ -164,9 +164,22 @@ moltype *molecule-type*
     the TPR format defines the molecule type.
 
 smarts *SMARTS-query*
-    select atoms using Daylight's SMARTS queries, e.g. ``smarts [#7;R]`` to
-    find nitrogen atoms in rings. Requires RDKit. All matches (max 1000) are
-    combined as a unique match.
+    select atoms using Daylight's SMARTS queries, e.g. ``smarts
+    [#7;R]`` to find nitrogen atoms in rings. Requires RDKit.
+    All matches are combined as a single unique match. The `smarts`
+    selection accepts two sets of key word arguments from
+    `select_atoms()`: the ``rdkit_kwargs`` are passed internally to
+    `RDKitConverter.convert()` and the ``smarts_kwargs`` are passed to
+    RDKit's `GetSubstructMatches
+    <https://www.rdkit.org/docs/source/rdkit.Chem.rdchem.html#rdkit.Chem.rdchem.Mol.GetSubstructMatches>`_.
+    By default, the `useChirality` kwarg in ``rdkit_kwargs`` is set to true
+    and maxMatches in ``smarts_kwargs`` is ``max(1000, 10 * n_atoms)``, where
+    ``n_atoms`` is either ``len(AtomGroup)`` or ``len(Universe.atoms)``,
+    whichever is applicable. Note that the number of matches can occasionally
+    exceed the default value of maxMatches, causing too few atoms to be
+    returned. If this occurs, a warning will be issued. The problem can be
+    fixed by increasing the value of maxMatches. This behavior may be updated
+    in the future
 
 chiral *R | S*
     select a particular stereocenter. e.g. ``name C and chirality S``
@@ -300,14 +313,26 @@ bynum *index-range*
     selects atoms 5 through 10 inclusive. All atoms in the
     :class:`MDAnalysis.Universe` are consecutively numbered, and the index
     runs from 1 up to the total number of atoms.
-
+    
+id *index-range*
+    selects all atoms in a range of (1-based) inclusive indices, e.g. ``id 1`` selects 
+    all the atoms with id 1; ``id 5:7`` selects all atoms with ids 5, all atoms with 
+    ids 6 and all atoms with ids 7.
+     
 index *index-range*
     selects all atoms within a range of (0-based) inclusive indices,
     e.g. ``index 0`` selects the first atom in the universe; ``index 5:10``
     selects atoms 6 through 11 inclusive. All atoms in the
     :class:`MDAnalysis.Universe` are consecutively numbered, and the index
     runs from 0 up to the total number of atoms - 1.
-
+    
+    
+.. note::
+    Conventionally, ``id`` corresponds to the serial number in the PDB format. In contrast 
+    to ``bynum``, the ``id`` topology attribute is not necessarily continuous, ordered, or 
+    unique, and can be arbitrarily assigned by the user. 
+    
+     
 .. _pre-selections-label:
 
 Preexisting selections and modifiers
