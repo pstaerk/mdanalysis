@@ -139,6 +139,18 @@ from . import base
 btype_sections = {'bond':'Bonds', 'angle':'Angles',
                   'dihedral':'Dihedrals', 'improper':'Impropers'}
 
+def create_unique_integer(bond_list):
+    """Create a unique bond type to integer conversion dict.
+
+    I.e. For each unique bond type, assign a unique integer.
+    This is used here, as LAMMPS identifies bond (and angles, dihedrals)
+    types by integers.
+    """
+    unique_bonds = np.unique(bond_list.types(), axis=0)
+
+    # shift the index by one such that we start counting from 1
+    return {tuple(b):i+1 for i,b in enumerate(unique_bonds)}
+
 class DCDWriter(DCD.DCDWriter):
     """Write a LAMMPS_ DCD trajectory.
 
@@ -335,12 +347,15 @@ class DATAWriter(base.WriterBase):
             self.f.write('{:d} {:f}\n'.format(atype, mass))
 
     def _write_bonds(self, bonds):
+        translation_list = create_unique_integer(bonds)
         self.f.write('\n')
         self.f.write('{}\n'.format(btype_sections[bonds.btype]))
         self.f.write('\n')
         for bond, i in zip(bonds, range(1, len(bonds)+1)):
             try:
-                self.f.write('{:d} {:d} '.format(i, int(bond.type))+\
+                print(translation_list)
+                bond_id = translation_list[bond.type]
+                self.f.write('{:d} {:d} '.format(i, bond_id)+\
                         ' '.join((bond.atoms.indices + 1).astype(str))+'\n')
             except TypeError:
                 errmsg = (f"LAMMPS DATAWriter: Trying to write bond, but bond "
@@ -425,6 +440,9 @@ class DATAWriter(base.WriterBase):
                 ('dihedral', 'dihedrals'), ('improper', 'impropers')]
 
             for btype, attr_name in attrs:
+                if not hasattr(atoms, attr_name):
+                    continue
+
                 features[btype] = atoms.__getattribute__(attr_name)
                 self.f.write('{:>12d}  {}\n'.format(len(features[btype]),
                                                     attr_name))
