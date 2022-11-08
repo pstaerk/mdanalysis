@@ -353,7 +353,6 @@ class DATAWriter(base.WriterBase):
         self.f.write('\n')
         for bond, i in zip(bonds, range(1, len(bonds)+1)):
             try:
-                print(translation_list)
                 bond_id = translation_list[bond.type]
                 self.f.write('{:d} {:d} '.format(i, bond_id)+\
                         ' '.join((bond.atoms.indices + 1).astype(str))+'\n')
